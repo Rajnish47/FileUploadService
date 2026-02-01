@@ -1,0 +1,33 @@
+spring:
+  application:
+    name:
+
+  servlet:
+    multipart:
+      enabled:
+      max-file-size:
+      max-request-size:
+
+  jpa:
+    hibernate:
+      ddl-auto:
+    show-sql:
+    properties:
+      hibernate:
+        dialect:
+        show-sql:
+
+  datasource:
+    url:
+    username:
+    password:
+
+server:
+  port:
+
+app:
+  upload:
+    # 128MB
+    chunk-size:
+    # 24 hours
+    expires-seconds:

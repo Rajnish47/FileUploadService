@@ -1,0 +1,102 @@
+############################
+# Maven
+############################
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+############################
+# Spring Boot
+############################
+*.log
+logs/
+spring.log
+
+############################
+# Java
+############################
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+############################
+# IDEs
+############################
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.factorypath
+
+############################
+# OS files
+############################
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+############################
+# Environment / Secrets
+############################
+.env
+.env.*
+application-local.yml
+application-local.properties
+application-dev.yml
+application-dev.properties
+
+############################
+# Test / Coverage
+############################
+coverage/
+*.exec
+*.lcov
+jacoco.exec
+jacoco/
+
+############################
+# Temporary files
+############################
+tmp/
+temp/
+*.swp
+*~
+
+############################
+# Docker
+############################
+docker-compose.override.yml
+
+############################
+# Logs from tools
+############################
+*.pid
+*.seed
+*.pid.lock

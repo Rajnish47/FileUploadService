@@ -92,7 +92,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             List<ChunkMetadata> chunkMetadataList = chunkDataRepository.findByUploadId(uploadId);
             FileMetadata fileMetadata  = fileMetadataRepository.findById(uploadId).get();
             try{
-                ReAssembleFile.reAssembleFile(chunkMetadataList,fileMetadata.getChecksumSha256(),fileMetadata.getFileName());
+                ReAssembleFile.reAssembleFile(chunkMetadataList,fileMetadata.getChecksumSha256(),fileMetadata.getFileName(),STORAGE_DIRECTORY);
             } catch (IOException e) {
                 throw new FileStorageException("Unable to reassemble file as of now.");
             }
@@ -108,7 +108,8 @@ public class FileUploadServiceImpl implements FileUploadService {
         FileMetadata fileMetadata = getFileMetadata(uploadInitiateRequest, totalChunks);
 
         FileMetadata savedFileMetadata = fileMetadataRepository.save(fileMetadata);
-        return new UploadInitiateResponse(savedFileMetadata.getId().toString(),chunk_size,totalChunks,expiresSeconds);
+        boolean chunkingRequired = totalChunks != 1;
+        return new UploadInitiateResponse(savedFileMetadata.getId().toString(),chunk_size,chunkingRequired,totalChunks,expiresSeconds);
     }
 
     private static FileMetadata getFileMetadata(UploadInitiateRequest uploadInitiateRequest, int totalChunks) {

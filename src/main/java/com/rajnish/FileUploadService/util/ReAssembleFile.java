@@ -12,10 +12,10 @@ import java.util.List;
 @Slf4j
 public class ReAssembleFile {
 
-    public static void reAssembleFile(List<ChunkMetadata> chunkMetadataList, String checksum, String fileName) throws IOException {
+    public static void reAssembleFile(List<ChunkMetadata> chunkMetadataList, String checksum, String fileName,String STORAGE_DIRECTORY) throws IOException {
 
         chunkMetadataList.sort(new ChunksDataChunkNoComparator());
-        try(FileOutputStream fout = new FileOutputStream("/Users/rj/Projects/data_storage/"+fileName,true))
+        try(FileOutputStream fout = new FileOutputStream(STORAGE_DIRECTORY+"/"+fileName,true))
         {
             for(ChunkMetadata chunkMetadata : chunkMetadataList)
             {
@@ -33,7 +33,7 @@ public class ReAssembleFile {
             }
         }
 
-        File file = new File("/Users/rj/Projects/data_storage/"+fileName);
+        File file = new File(STORAGE_DIRECTORY+"/"+fileName);
         String finalChecksum;
         try{
             finalChecksum = CalculateChecksum.calculateFileChecksum(file.toPath());

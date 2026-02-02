@@ -3,7 +3,7 @@ package com.rajnish.FileUploadService.controller;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.rajnish.FileUploadService.dto.ChunkMetadata;
+import com.rajnish.FileUploadService.dto.ChunkMetadataDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,28 +34,15 @@ public class FileUploadController {
     }
 
     @PostMapping("/{uploadId}/chunk/{chunkNo}")
-    public ResponseEntity<Boolean> fileUpload(@RequestPart("file") MultipartFile file, @RequestPart("chunkMetadata") ChunkMetadata chunkMetadata, @PathVariable("uploadId") UUID uploadId, @PathVariable("chunkNo")int chunkNo) {
+    public ResponseEntity<Boolean> fileUpload(@RequestPart("file") MultipartFile file, @RequestPart("chunkMetadata") ChunkMetadataDTO chunkMetadata, @PathVariable("uploadId") UUID uploadId, @PathVariable("chunkNo")int chunkNo) {
 
         try {
             fileUploadService.saveFile(file,uploadId,chunkNo,chunkMetadata.checksum());
-            return new ResponseEntity<>(true,HttpStatus.OK);         
+            return new ResponseEntity<>(true,HttpStatus.OK);
         } catch (IOException e) {
             log.error("Exception during file-upload ",e);
         }
 
         return new ResponseEntity<>(false,HttpStatus.UNPROCESSABLE_ENTITY);
     }
-
-//    @PostMapping("/uploadwhole")
-//    public ResponseEntity<Boolean> fileUploadWhole(@RequestParam("file") MultipartFile file) {
-//
-//        try {
-//            fileUploadService.saveFile(file);
-//            return new ResponseEntity<>(true,HttpStatus.OK);
-//        } catch (IOException e) {
-//            log.error("Exception during file-upload ",e);
-//        }
-//
-//        return new ResponseEntity<>(false,HttpStatus.UNPROCESSABLE_ENTITY);
-//    }
 }

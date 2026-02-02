@@ -9,7 +9,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-public class ChunkData extends BaseModel{
+public class ChunkMetadata extends BaseModel{
 
     private UUID uploadId;
     private int chunkNo;

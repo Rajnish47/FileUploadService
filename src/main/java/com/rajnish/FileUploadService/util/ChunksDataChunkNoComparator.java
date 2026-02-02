@@ -1,13 +1,13 @@
 package com.rajnish.FileUploadService.util;
 
-import com.rajnish.FileUploadService.model.ChunkData;
+import com.rajnish.FileUploadService.model.ChunkMetadata;
 
 import java.util.Comparator;
 
-public class ChunksDataChunkNoComparator implements Comparator<ChunkData> {
+public class ChunksDataChunkNoComparator implements Comparator<ChunkMetadata> {
 
     @Override
-    public int compare(ChunkData c1, ChunkData c2) {
+    public int compare(ChunkMetadata c1, ChunkMetadata c2) {
         return Integer.compare(c1.getChunkNo(), c2.getChunkNo());
     }
 }

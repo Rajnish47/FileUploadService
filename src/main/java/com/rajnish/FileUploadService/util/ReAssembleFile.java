@@ -1,41 +1,54 @@
 package com.rajnish.FileUploadService.util;
 
-import java.io.File;
+import java.io.*;
 
-import com.rajnish.FileUploadService.model.ChunkData;
+import com.rajnish.FileUploadService.exception.CorruptFileException;
+import com.rajnish.FileUploadService.exception.FileNotFoundInStorageException;
+import com.rajnish.FileUploadService.model.ChunkMetadata;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 @Slf4j
 public class ReAssembleFile {
 
-    public static boolean reAssembleFile(List<ChunkData> chunkDataList) throws IOException {
+    public static void reAssembleFile(List<ChunkMetadata> chunkMetadataList, String checksum, String fileName) throws IOException {
 
-        chunkDataList.sort(new ChunksDataChunkNoComparator());
-        try(FileOutputStream fout = new FileOutputStream("/Users/rj/Projects/data_storage/movie.mkv",true))
+        chunkMetadataList.sort(new ChunksDataChunkNoComparator());
+        try(FileOutputStream fout = new FileOutputStream("/Users/rj/Projects/data_storage/"+fileName,true))
         {
-            for(ChunkData chunkData: chunkDataList)
+            for(ChunkMetadata chunkMetadata : chunkMetadataList)
             {
-                File file = new File(chunkData.getChunkPath());
-                FileInputStream fin = new FileInputStream(file);
-                byte[] bytes = fin.readAllBytes();
+                File file = new File(chunkMetadata.getChunkPath());
+                try(FileInputStream fin = new FileInputStream(file))
+                {
+                    byte[] bytes = fin.readAllBytes();
+                    fout.write(bytes);
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new FileNotFoundInStorageException("Chunk no "+chunkMetadata.getChunkNo()+" is not found in storage");
 
-                fout.write(bytes);
+                }
             }
+        }
 
+        File file = new File("/Users/rj/Projects/data_storage/"+fileName);
+        String finalChecksum;
+        try{
+            finalChecksum = CalculateChecksum.calculateFileChecksum(file.toPath());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        log.info("Final checksum: {}", finalChecksum);
+        log.info("Current checksum: {}", checksum);
+
+        if(!finalChecksum.contentEquals(checksum))
+        {
+            throw new CorruptFileException("Checksum validation failed");
         }
 
         log.info("Reassembly finished!!!!!");
-
-        return true;
     }
 }

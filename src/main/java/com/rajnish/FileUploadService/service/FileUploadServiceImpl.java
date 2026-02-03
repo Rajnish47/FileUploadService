@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.rajnish.FileUploadService.exception.CorruptFileException;
@@ -59,6 +60,13 @@ public class FileUploadServiceImpl implements FileUploadService {
             throw new SecurityException("Unsupported filename");
         }
 
+        Optional<ChunkMetadata> chunkMetadataOptional = chunkDataRepository.findByUploadIdAndChunkNo(uploadId,chunkNo);
+        if(chunkMetadataOptional.isPresent() && chunkMetadataOptional.get().getUploadStatus()==UploadStatus.VERIFIED)
+        {
+            log.info("Duplicate chunk received");
+            return true;
+        }
+
         String chunkChecksum;
         try{
             chunkChecksum = CalculateChecksum.calculateChunkChecksum(file.getInputStream().readAllBytes());
@@ -76,12 +84,15 @@ public class FileUploadServiceImpl implements FileUploadService {
         chunkMetadata.setChunkNo(chunkNo);
         chunkMetadata.setChunkPath(targetFile.getPath());
         chunkMetadata.setChecksum(checksum);
+        chunkMetadata.setUploadStatus(UploadStatus.WRITING);
 
-        chunkDataRepository.save(chunkMetadata);
+        ChunkMetadata savedChunkMetadata = chunkDataRepository.save(chunkMetadata);
         int expectedChunks = fileMetadataRepository.findTotalChunksByUploadId(uploadId);
         long currentChunkCount = chunkDataRepository.countByUploadId(uploadId);
         try{
             Files.copy(file.getInputStream(),targetFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            savedChunkMetadata.setUploadStatus(UploadStatus.VERIFIED);
+            chunkDataRepository.save(savedChunkMetadata);
         } catch (IOException e) {
             throw new FileStorageException("Unable to write file to storage.");
         }
@@ -90,9 +101,12 @@ public class FileUploadServiceImpl implements FileUploadService {
         {
             log.info("All chunks arrived, starting reassembly.");
             List<ChunkMetadata> chunkMetadataList = chunkDataRepository.findByUploadId(uploadId);
-            FileMetadata fileMetadata  = fileMetadataRepository.findById(uploadId).get();
+            FileMetadata savedFileMetadata  = fileMetadataRepository.findById(uploadId).get();
             try{
-                ReAssembleFile.reAssembleFile(chunkMetadataList,fileMetadata.getChecksumSha256(),fileMetadata.getFileName(),STORAGE_DIRECTORY);
+                ReAssembleFile.reAssembleFile(chunkMetadataList,savedFileMetadata.getChecksumSha256(),savedFileMetadata.getFileName(),STORAGE_DIRECTORY);
+                savedFileMetadata.setStatus(UploadStatus.VERIFIED);
+                fileMetadataRepository.save(savedFileMetadata);
+
             } catch (IOException e) {
                 throw new FileStorageException("Unable to reassemble file as of now.");
             }
@@ -117,9 +131,9 @@ public class FileUploadServiceImpl implements FileUploadService {
         fileMetadata.setFileName(uploadInitiateRequest.fileName());
         fileMetadata.setFileSize(uploadInitiateRequest.fileSize());
         fileMetadata.setTotalChunks(totalChunks);
-        fileMetadata.setStatus(UploadStatus.INITIATED);
+        fileMetadata.setStatus(UploadStatus.WRITING);
         fileMetadata.setChecksumSha256(uploadInitiateRequest.checksum());
-        if(totalChunks ==1)
+        if(totalChunks==1)
         {
             fileMetadata.setUploadType(UploadType.DIRECT);
         }

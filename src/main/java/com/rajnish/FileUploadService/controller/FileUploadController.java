@@ -1,16 +1,15 @@
 package com.rajnish.FileUploadService.controller;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
-import com.rajnish.FileUploadService.dto.ChunkMetadataDTO;
+import com.rajnish.FileUploadService.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rajnish.FileUploadService.dto.UploadInitiateRequest;
-import com.rajnish.FileUploadService.dto.UploadInitiateResponse;
 import com.rajnish.FileUploadService.service.interfaces.FileUploadService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -44,5 +43,12 @@ public class FileUploadController {
         }
 
         return new ResponseEntity<>(false,HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @PostMapping("/resume")
+    public ResponseEntity<ResumeUploadResponse> resumeUpload(@RequestBody ResumeUploadRequest resumeUploadRequest)
+    {
+        return new ResponseEntity<>(fileUploadService.resumeUpload(resumeUploadRequest),HttpStatus.OK);
+
     }
 }

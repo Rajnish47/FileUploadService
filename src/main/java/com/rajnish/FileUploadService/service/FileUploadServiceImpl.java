@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
+import com.rajnish.FileUploadService.dto.ResumeUploadRequest;
+import com.rajnish.FileUploadService.dto.ResumeUploadResponse;
 import com.rajnish.FileUploadService.exception.CorruptFileException;
 import com.rajnish.FileUploadService.exception.FileStorageException;
 import com.rajnish.FileUploadService.model.ChunkMetadata;
@@ -124,6 +123,26 @@ public class FileUploadServiceImpl implements FileUploadService {
         FileMetadata savedFileMetadata = fileMetadataRepository.save(fileMetadata);
         boolean chunkingRequired = totalChunks != 1;
         return new UploadInitiateResponse(savedFileMetadata.getId().toString(),chunk_size,chunkingRequired,totalChunks,expiresSeconds);
+    }
+
+    @Override
+    public ResumeUploadResponse resumeUpload(ResumeUploadRequest resumeUploadRequest)
+    {
+        List<Integer> missingChunkNos = new ArrayList<>();
+        int totalChunkNo = fileMetadataRepository.findTotalChunksByUploadId(resumeUploadRequest.uploadId());
+        log.info("Total chunks: {}",totalChunkNo);
+        Set<Integer> uploadedChunkNos = chunkDataRepository.findVerifiedChunks(resumeUploadRequest.uploadId(),"VERIFIED");
+        log.info(uploadedChunkNos.toString());
+        for(int i=1;i<=totalChunkNo;i++)
+        {
+            if(!uploadedChunkNos.contains(i))
+            {
+                missingChunkNos.add(i);
+            }
+        }
+        log.info(missingChunkNos.toString());
+
+        return new ResumeUploadResponse(missingChunkNos);
     }
 
     private static FileMetadata getFileMetadata(UploadInitiateRequest uploadInitiateRequest, int totalChunks) {
